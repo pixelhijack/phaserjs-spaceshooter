@@ -59,7 +59,8 @@
 	});
 	
 	function AsteroidAdventures(){
-	    var ship;
+	    var keys, 
+	        ship;
 	    
 	    this.init = function(config){
 	        console.log('[PHASER] init', config);
@@ -70,13 +71,30 @@
 	    };
 	    this.create = function(){
 	        console.log('[PHASER] create');
+	        
 	        ship = this.game.add.sprite(100, 100, 'ships');
 	        ship.animations.add('idle', ['43'], 10, true);
 	        this.game.add.existing(ship);
+	        this.game.physics.enable(ship, Phaser.Physics.ARCADE);
+	        
+	        keys = this.game.input.keyboard.createCursorKeys();
+	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 	    };
 	    this.update = function(){
 	        console.log('[PHASER] update');
 	        ship.animations.play('idle');
+	        if(keys.right.isDown){
+	            ship.body.velocity.x++;
+	        }
+	        if(keys.left.isDown){
+	            ship.body.velocity.x--;
+	        }
+	        if(keys.up.isDown){
+	            ship.body.velocity.y--;
+	        }
+	        if(keys.down.isDown){
+	            ship.body.velocity.y++;
+	        }
 	    };
 	}
 
