@@ -4,7 +4,7 @@ var Asteroid = require('./asteroid.js');
 function AsteroidAdventures(){
     var keys, 
         ship, 
-        asteroid;
+        asteroids;
         
     var ACC = 3;
     
@@ -22,11 +22,14 @@ function AsteroidAdventures(){
         ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships');
         ship.animations.add('idle', ['43'], 10, true);
         
-        asteroid =  new Asteroid(this.game, 200, 200, 'asteroids');
-        asteroid.animations.add('idle', ['03'], 10, true);
+        asteroids = this.game.add.group();
         
-        asteroid.body.velocity.x += Math.random() * 50;
-        asteroid.body.velocity.y += Math.random() * 50;
+        for(var i=0;i<50;i++){
+            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
+            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
+            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50
+            asteroids.add(asteroid);
+        }
         
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -34,11 +37,9 @@ function AsteroidAdventures(){
     this.update = function(){
         console.log('[PHASER] update');
         
-        this.game.physics.arcade.collide(ship, asteroid);
+        this.game.physics.arcade.collide(ship, asteroids);
         
         ship.animations.play('idle');
-        asteroid.animations.play('idle');
-        
         
         if(keys.right.isDown){
             ship.body.velocity.x += ACC;

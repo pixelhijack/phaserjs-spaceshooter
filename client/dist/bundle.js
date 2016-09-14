@@ -73,7 +73,7 @@
 	function AsteroidAdventures(){
 	    var keys, 
 	        ship, 
-	        asteroid;
+	        asteroids;
 	        
 	    var ACC = 3;
 	    
@@ -91,11 +91,14 @@
 	        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships');
 	        ship.animations.add('idle', ['43'], 10, true);
 	        
-	        asteroid =  new Asteroid(this.game, 200, 200, 'asteroids');
-	        asteroid.animations.add('idle', ['03'], 10, true);
+	        asteroids = this.game.add.group();
 	        
-	        asteroid.body.velocity.x += Math.random() * 50;
-	        asteroid.body.velocity.y += Math.random() * 50;
+	        for(var i=0;i<50;i++){
+	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
+	            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
+	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50
+	            asteroids.add(asteroid);
+	        }
 	        
 	        keys = this.game.input.keyboard.createCursorKeys();
 	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -103,11 +106,9 @@
 	    this.update = function(){
 	        console.log('[PHASER] update');
 	        
-	        this.game.physics.arcade.collide(ship, asteroid);
+	        this.game.physics.arcade.collide(ship, asteroids);
 	        
 	        ship.animations.play('idle');
-	        asteroid.animations.play('idle');
-	        
 	        
 	        if(keys.right.isDown){
 	            ship.body.velocity.x += ACC;
@@ -180,7 +181,19 @@
 	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
 	
 	function Asteroid(game, x, y, sprite){
+	    var asteroidSprites = ['01','02','03','04','05','06','07','08'], 
+	        aRandomSprite = Math.floor(Math.random() * asteroidSprites.length),
+	        aRandomSize = Math.random() * 1;
+	    
 	    GameObject.call(this, game, x, y, sprite);
+	    this.animations.add('idle', [aRandomSprite], 10, true);
+	    this.body.bounce.setTo(1, 1);
+	    this.scale.x *= aRandomSize;
+	    this.scale.y *= aRandomSize;
+	    
+	    this.update = function(){
+	        this.animations.play('idle');
+	    };
 	}
 	
 	Asteroid.prototype = Object.create(Phaser.Sprite.prototype);
