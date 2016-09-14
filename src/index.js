@@ -11,7 +11,8 @@ game.state.start('AsteroidAdventures', true, true, {
 
 function AsteroidAdventures(){
     var keys, 
-        ship;
+        ship, 
+        asteroid;
         
     var ACC = 3;
     
@@ -21,6 +22,7 @@ function AsteroidAdventures(){
     this.preload = function(){
         console.log('[PHASER] preload');
         this.game.load.atlas('ships', '../assets/ships.png', '../assets/ships.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+        this.game.load.atlas('asteroids', '../assets/asteroids.png', '../assets/asteroids.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
     };
     this.create = function(){
         console.log('[PHASER] create');
@@ -33,13 +35,26 @@ function AsteroidAdventures(){
         ship.anchor.setTo(0.5,0.5);
         ship.scale.x *= -1;
         
+        asteroid =  this.game.add.sprite(200, 200, 'asteroids');
+        asteroid.animations.add('idle', [Math.floor(10 + Math.random() * 97).toString()], 10, true);
+        asteroid.animations.play('idle');
+        this.game.add.existing(asteroid);
+        this.game.physics.enable(asteroid, Phaser.Physics.ARCADE);
+        asteroid.body.collideWorldBounds = true;
+        asteroid.body.velocity.x += Math.random() * 50;
+        asteroid.body.velocity.y += Math.random() * 50;
+        
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     };
     this.update = function(){
         console.log('[PHASER] update');
+        
+        game.physics.arcade.collide(ship, asteroid);
+        
         ship.animations.play('idle');
         ship.body.rotation = ship.body.angle * 180 / Math.PI;
+        
         if(keys.right.isDown){
             ship.body.velocity.x += ACC;
         }
