@@ -36,10 +36,11 @@ function AsteroidAdventures(){
         ship.scale.x *= -1;
         
         asteroid =  this.game.add.sprite(200, 200, 'asteroids');
-        asteroid.animations.add('idle', [Math.floor(10 + Math.random() * 97).toString()], 10, true);
+        asteroid.animations.add('idle', ['03'], 10, true);
         asteroid.animations.play('idle');
         this.game.add.existing(asteroid);
         this.game.physics.enable(asteroid, Phaser.Physics.ARCADE);
+        ship.anchor.setTo(0.5,0.5);
         asteroid.body.collideWorldBounds = true;
         asteroid.body.velocity.x += Math.random() * 50;
         asteroid.body.velocity.y += Math.random() * 50;
