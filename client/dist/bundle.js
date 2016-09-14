@@ -45,18 +45,30 @@
 /*!*****************************!*\
   !*** ./client/src/index.js ***!
   \*****************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
+	var AsteroidAdventures = __webpack_require__(/*! ./game.js */ 1);
+	
 	var configs = {
-	    WIDTH: 1000,
-	    HEIGHT: 1000,
-	    DOM_ELEMENT: 'app'
+	    WIDTH: 512,
+	    HEIGHT: 512,
+	    DOM_ELEMENT: 'game'
 	};
 	var game = new Phaser.Game(configs.WIDTH, configs.HEIGHT, Phaser.AUTO, configs.DOM_ELEMENT);
 	game.state.add('AsteroidAdventures', AsteroidAdventures);
 	game.state.start('AsteroidAdventures', true, true, { 
 	    initialConfig: 'some initial state'
 	});
+
+/***/ },
+/* 1 */
+/*!****************************!*\
+  !*** ./client/src/game.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var Ship = __webpack_require__(/*! ./ship.js */ 2);
+	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 4);
 	
 	function AsteroidAdventures(){
 	    var keys, 
@@ -76,21 +88,12 @@
 	    this.create = function(){
 	        console.log('[PHASER] create');
 	        
-	        ship = this.game.add.sprite(this.world.centerX, this.world.centerY, 'ships');
+	        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships');
 	        ship.animations.add('idle', ['43'], 10, true);
-	        this.game.add.existing(ship);
-	        this.game.physics.enable(ship, Phaser.Physics.ARCADE);
-	        ship.body.collideWorldBounds = true;
-	        ship.anchor.setTo(0.5,0.5);
-	        ship.scale.x *= -1;
 	        
-	        asteroid =  this.game.add.sprite(200, 200, 'asteroids');
+	        asteroid =  new Asteroid(this.game, 200, 200, 'asteroids');
 	        asteroid.animations.add('idle', ['03'], 10, true);
-	        asteroid.animations.play('idle');
-	        this.game.add.existing(asteroid);
-	        this.game.physics.enable(asteroid, Phaser.Physics.ARCADE);
-	        ship.anchor.setTo(0.5,0.5);
-	        asteroid.body.collideWorldBounds = true;
+	        
 	        asteroid.body.velocity.x += Math.random() * 50;
 	        asteroid.body.velocity.y += Math.random() * 50;
 	        
@@ -100,10 +103,11 @@
 	    this.update = function(){
 	        console.log('[PHASER] update');
 	        
-	        game.physics.arcade.collide(ship, asteroid);
+	        this.game.physics.arcade.collide(ship, asteroid);
 	        
 	        ship.animations.play('idle');
-	        ship.body.rotation = ship.body.angle * 180 / Math.PI;
+	        asteroid.animations.play('idle');
+	        
 	        
 	        if(keys.right.isDown){
 	            ship.body.velocity.x += ACC;
@@ -119,6 +123,70 @@
 	        }
 	    };
 	}
+	
+	module.exports = AsteroidAdventures;
+
+/***/ },
+/* 2 */
+/*!****************************!*\
+  !*** ./client/src/ship.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	
+	function Ship(game, x, y, sprite){
+	    GameObject.call(this, game, x, y, sprite);
+	    this.scale.x *= -1;
+	    
+	    this.update = function(){
+	        this.body.rotation = this.body.angle * 180 / Math.PI;
+	    };
+	}
+	
+	Ship.prototype = Object.create(Phaser.Sprite.prototype);
+	Ship.prototype.constructor = Ship;
+	
+	module.exports = Ship;
+
+/***/ },
+/* 3 */
+/*!**********************************!*\
+  !*** ./client/src/gameobject.js ***!
+  \**********************************/
+/***/ function(module, exports) {
+
+	function GameObject(game, x, y, sprite){
+	    this.game = game;
+	    Phaser.Sprite.call(this, game, x, y, sprite);
+	    this.game.add.existing(this);
+	    this.game.physics.enable(this, Phaser.Physics.ARCADE);
+	    this.body.collideWorldBounds = true;
+	    this.anchor.setTo(0.5, 0.5);
+	}
+	
+	GameObject.prototype = Object.create(Phaser.Sprite.prototype);
+	GameObject.prototype.constructor = GameObject;
+	
+	module.exports = GameObject;
+
+/***/ },
+/* 4 */
+/*!********************************!*\
+  !*** ./client/src/asteroid.js ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	
+	function Asteroid(game, x, y, sprite){
+	    GameObject.call(this, game, x, y, sprite);
+	}
+	
+	Asteroid.prototype = Object.create(Phaser.Sprite.prototype);
+	Asteroid.prototype.constructor = Asteroid;
+	
+	module.exports = Asteroid;
 
 /***/ }
 /******/ ]);
