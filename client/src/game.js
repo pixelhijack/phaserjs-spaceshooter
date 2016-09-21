@@ -20,6 +20,9 @@ function AsteroidAdventures(){
         console.log('[PHASER] create');
         
         ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships');
+        ship.props.ROTATION_SPEED = 180; // degrees/second
+        ship.props.ACCELERATION = 200; // pixels/second/second
+        ship.props.MAX_SPEED = 250; // pixels/second
         ship.animations.add('idle', ['43'], 10, true);
         
         asteroids = this.game.add.group();
@@ -41,17 +44,19 @@ function AsteroidAdventures(){
         
         ship.animations.play('idle');
         
-        if(keys.right.isDown){
-            ship.body.velocity.x += ACC;
-        }
         if(keys.left.isDown){
-            ship.body.velocity.x -= ACC;
+            ship.body.angularVelocity = -ship.props.ROTATION_SPEED;
+        } else if(keys.right.isDown){
+            ship.body.angularVelocity = ship.props.ROTATION_SPEED;
+        } else {
+            ship.body.angularVelocity = 0;
         }
+        
         if(keys.up.isDown){
-            ship.body.velocity.y -= ACC;
-        }
-        if(keys.down.isDown){
-            ship.body.velocity.y += ACC;
+            ship.body.acceleration.x = Math.cos(ship.rotation) * ship.props.ACCELERATION;
+            ship.body.acceleration.y = Math.sin(ship.rotation) * ship.props.ACCELERATION;
+        } else {
+            ship.body.acceleration.setTo(0, 0);
         }
     };
 }
