@@ -19,10 +19,11 @@ function AsteroidAdventures(){
     this.create = function(){
         console.log('[PHASER] create');
         
-        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships');
-        ship.props.ROTATION_SPEED = 180; // degrees/second
-        ship.props.ACCELERATION = 200; // pixels/second/second
-        ship.props.MAX_SPEED = 250; // pixels/second
+        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships', {
+            ROTATION_SPEED: 180, // degrees/second
+            ACCELERATION: 200, // pixels/second/second
+            MAX_SPEED: 250 // pixels/second
+        });
         ship.animations.add('idle', ['43'], 10, true);
         
         asteroids = this.game.add.group();
@@ -33,6 +34,11 @@ function AsteroidAdventures(){
             asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50
             asteroids.add(asteroid);
         }
+        
+        this.keyEvents = new Phaser.Signal();
+        ship.on(this.keyEvents, function(event){
+            console.log('Something happened', event);
+        });
         
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -53,6 +59,7 @@ function AsteroidAdventures(){
         }
         
         if(keys.up.isDown){
+            this.keyEvents.dispatch({ type: 'KEY_UP' });
             ship.body.acceleration.x = Math.cos(ship.rotation) * ship.props.ACCELERATION;
             ship.body.acceleration.y = Math.sin(ship.rotation) * ship.props.ACCELERATION;
         } else {

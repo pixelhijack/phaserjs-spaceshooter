@@ -10,4 +10,8 @@ function GameObject(game, x, y, sprite){
 GameObject.prototype = Object.create(Phaser.Sprite.prototype);
 GameObject.prototype.constructor = GameObject;
 
+GameObject.prototype.on = function(eventSource, callback){
+    eventSource.add(callback, this);
+};
+
 module.exports = GameObject;
