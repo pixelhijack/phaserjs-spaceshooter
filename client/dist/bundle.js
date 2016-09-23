@@ -91,6 +91,9 @@
 	    this.create = function(){
 	        console.log('[PHASER] create');
 	        
+	        // for fps debugging
+	        this.game.time.advancedTiming = true;
+	        
 	        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships', {
 	            ROTATION_SPEED: 180, // degrees/second
 	            ACCELERATION: 200, // pixels/second/second
@@ -115,6 +118,9 @@
 	    };
 	    this.update = function(){
 	        console.log('[PHASER] update');
+	        
+	        // fps debugging 
+	        this.game.debug.text(this.game.time.fps, 5, 20);
 	        
 	        this.game.physics.arcade.collide(ship, asteroids, function(){
 	            this.eventsOf.collision.dispatch({ type: 'COLLISION' });
