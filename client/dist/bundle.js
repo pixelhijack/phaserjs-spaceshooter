@@ -105,9 +105,10 @@
 	        }
 	        
 	        this.keyEvents = new Phaser.Signal();
-	        ship.on(this.keyEvents, function(event){
-	            console.log('Something happened', event);
-	        });
+	        this.collisionEvents = new Phaser.Signal();
+	        
+	        ship.listen(this.keyEvents, ship.onEvents);
+	        ship.listen(this.collisionEvents, ship.onEvents);
 	        
 	        keys = this.game.input.keyboard.createCursorKeys();
 	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -115,7 +116,9 @@
 	    this.update = function(){
 	        console.log('[PHASER] update');
 	        
-	        this.game.physics.arcade.collide(ship, asteroids);
+	        this.game.physics.arcade.collide(ship, asteroids, function(){
+	            this.collisionEvents.dispatch({ type: 'COLLISION' });
+	        }.bind(this));
 	        
 	        ship.animations.play('idle');
 	        
@@ -183,8 +186,12 @@
 	GameObject.prototype = Object.create(Phaser.Sprite.prototype);
 	GameObject.prototype.constructor = GameObject;
 	
-	GameObject.prototype.on = function(eventSource, callback){
+	GameObject.prototype.listen = function(eventSource, callback){
 	    eventSource.add(callback, this);
+	};
+	
+	GameObject.prototype.onEvents = function(event){
+	    console.log('[%s]: ', this.constructor.name, event);
 	};
 	
 	module.exports = GameObject;

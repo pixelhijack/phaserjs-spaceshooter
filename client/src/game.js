@@ -36,9 +36,10 @@ function AsteroidAdventures(){
         }
         
         this.keyEvents = new Phaser.Signal();
-        ship.on(this.keyEvents, function(event){
-            console.log('Something happened', event);
-        });
+        this.collisionEvents = new Phaser.Signal();
+        
+        ship.listen(this.keyEvents, ship.onEvents);
+        ship.listen(this.collisionEvents, ship.onEvents);
         
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -46,7 +47,9 @@ function AsteroidAdventures(){
     this.update = function(){
         console.log('[PHASER] update');
         
-        this.game.physics.arcade.collide(ship, asteroids);
+        this.game.physics.arcade.collide(ship, asteroids, function(){
+            this.collisionEvents.dispatch({ type: 'COLLISION' });
+        }.bind(this));
         
         ship.animations.play('idle');
         
