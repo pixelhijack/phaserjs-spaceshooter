@@ -6,7 +6,10 @@ function AsteroidAdventures(){
         ship, 
         asteroids;
         
-    var ACC = 3;
+    this.eventsOf = {
+        keys: new Phaser.Signal(),
+        collision: new Phaser.Signal()
+    };
     
     this.init = function(config){
         console.log('[PHASER] init', config);
@@ -35,11 +38,8 @@ function AsteroidAdventures(){
             asteroids.add(asteroid);
         }
         
-        this.keyEvents = new Phaser.Signal();
-        this.collisionEvents = new Phaser.Signal();
-        
-        ship.listen(this.keyEvents, ship.onEvents);
-        ship.listen(this.collisionEvents, ship.onEvents);
+        ship.listen(this.eventsOf.keys, ship.onEvents);
+        ship.listen(this.eventsOf.collision, ship.onEvents);
         
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -48,25 +48,23 @@ function AsteroidAdventures(){
         console.log('[PHASER] update');
         
         this.game.physics.arcade.collide(ship, asteroids, function(){
-            this.collisionEvents.dispatch({ type: 'COLLISION' });
+            this.eventsOf.collision.dispatch({ type: 'COLLISION' });
         }.bind(this));
         
         ship.animations.play('idle');
         
         if(keys.left.isDown){
-            ship.body.angularVelocity = -ship.props.ROTATION_SPEED;
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'left' });
         } else if(keys.right.isDown){
-            ship.body.angularVelocity = ship.props.ROTATION_SPEED;
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'right' });
         } else {
-            ship.body.angularVelocity = 0;
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-rotate' });
         }
         
         if(keys.up.isDown){
-            this.keyEvents.dispatch({ type: 'KEY_UP' });
-            ship.body.acceleration.x = Math.cos(ship.rotation) * ship.props.ACCELERATION;
-            ship.body.acceleration.y = Math.sin(ship.rotation) * ship.props.ACCELERATION;
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'up' });
         } else {
-            ship.body.acceleration.setTo(0, 0);
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
         }
     };
 }

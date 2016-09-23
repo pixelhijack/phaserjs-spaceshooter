@@ -75,7 +75,10 @@
 	        ship, 
 	        asteroids;
 	        
-	    var ACC = 3;
+	    this.eventsOf = {
+	        keys: new Phaser.Signal(),
+	        collision: new Phaser.Signal()
+	    };
 	    
 	    this.init = function(config){
 	        console.log('[PHASER] init', config);
@@ -104,11 +107,8 @@
 	            asteroids.add(asteroid);
 	        }
 	        
-	        this.keyEvents = new Phaser.Signal();
-	        this.collisionEvents = new Phaser.Signal();
-	        
-	        ship.listen(this.keyEvents, ship.onEvents);
-	        ship.listen(this.collisionEvents, ship.onEvents);
+	        ship.listen(this.eventsOf.keys, ship.onEvents);
+	        ship.listen(this.eventsOf.collision, ship.onEvents);
 	        
 	        keys = this.game.input.keyboard.createCursorKeys();
 	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -117,25 +117,23 @@
 	        console.log('[PHASER] update');
 	        
 	        this.game.physics.arcade.collide(ship, asteroids, function(){
-	            this.collisionEvents.dispatch({ type: 'COLLISION' });
+	            this.eventsOf.collision.dispatch({ type: 'COLLISION' });
 	        }.bind(this));
 	        
 	        ship.animations.play('idle');
 	        
 	        if(keys.left.isDown){
-	            ship.body.angularVelocity = -ship.props.ROTATION_SPEED;
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'left' });
 	        } else if(keys.right.isDown){
-	            ship.body.angularVelocity = ship.props.ROTATION_SPEED;
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'right' });
 	        } else {
-	            ship.body.angularVelocity = 0;
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-rotate' });
 	        }
 	        
 	        if(keys.up.isDown){
-	            this.keyEvents.dispatch({ type: 'KEY_UP' });
-	            ship.body.acceleration.x = Math.cos(ship.rotation) * ship.props.ACCELERATION;
-	            ship.body.acceleration.y = Math.sin(ship.rotation) * ship.props.ACCELERATION;
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'up' });
 	        } else {
-	            ship.body.acceleration.setTo(0, 0);
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
 	        }
 	    };
 	}
@@ -160,10 +158,46 @@
 	    this.update = function(){
 	        // this.body.rotation = this.body.angle * 180 / Math.PI;
 	    };
+	    
+	    this.onEvents = function(event){
+	        switch(event.type){
+	            case 'KEY': 
+	                onKeyPress.call(this, event);
+	                break;
+	            case 'COLLISION':
+	                onCollision.call(this, event);
+	        }
+	    };
 	}
 	
 	Ship.prototype = Object.create(GameObject.prototype);
 	Ship.prototype.constructor = Ship;
+	
+	// reducers: 
+	function onKeyPress(event){
+	    switch (event.key) {
+	        case 'left':
+	            this.body.angularVelocity = -this.props.ROTATION_SPEED;
+	            break;
+	        case 'right':
+	            this.body.angularVelocity = this.props.ROTATION_SPEED;
+	            break;
+	        case 'no-rotate':
+	            this.body.angularVelocity = 0;
+	            break;
+	        case 'up':
+	            this.body.acceleration.x = Math.cos(this.rotation) * this.props.ACCELERATION;
+	            this.body.acceleration.y = Math.sin(this.rotation) * this.props.ACCELERATION;
+	            break;
+	        case 'no-thrust':
+	            this.body.acceleration.setTo(0, 0);
+	            break;
+	    }
+	}
+	
+	function onCollision(event){
+	    
+	}
 	
 	module.exports = Ship;
 
