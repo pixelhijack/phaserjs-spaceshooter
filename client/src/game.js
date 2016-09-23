@@ -72,6 +72,10 @@ function AsteroidAdventures(){
         } else {
             this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
         }
+        
+        if(keys.space.isDown){
+            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'space' });
+        }
     };
 }
 

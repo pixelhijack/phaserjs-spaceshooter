@@ -6,6 +6,10 @@ function Ship(game, x, y, sprite, props){
     
     this.props = props;
     
+    this.shoot = function(){
+        
+    };
+    
     this.update = function(){
         // this.body.rotation = this.body.angle * 180 / Math.PI;
     };
@@ -42,6 +46,9 @@ function onKeyPress(event){
             break;
         case 'no-thrust':
             this.body.acceleration.setTo(0, 0);
+            break;
+        case 'space':
+            this.shoot();
             break;
     }
 }

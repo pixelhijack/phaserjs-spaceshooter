@@ -141,6 +141,10 @@
 	        } else {
 	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
 	        }
+	        
+	        if(keys.space.isDown){
+	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'space' });
+	        }
 	    };
 	}
 	
@@ -160,6 +164,10 @@
 	    this.scale.x *= -1;
 	    
 	    this.props = props;
+	    
+	    this.shoot = function(){
+	        
+	    };
 	    
 	    this.update = function(){
 	        // this.body.rotation = this.body.angle * 180 / Math.PI;
@@ -197,6 +205,9 @@
 	            break;
 	        case 'no-thrust':
 	            this.body.acceleration.setTo(0, 0);
+	            break;
+	        case 'space':
+	            this.shoot();
 	            break;
 	    }
 	}
