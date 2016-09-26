@@ -67,6 +67,7 @@
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 7);
 	var Ship = __webpack_require__(/*! ./ship.js */ 2);
 	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 4);
 	var Bullet = __webpack_require__(/*! ./bullet.js */ 5);
@@ -133,27 +134,27 @@
 	        this.game.debug.text(this.game.time.fps, 5, 20);
 	        
 	        this.game.physics.arcade.collide(ship, asteroids, function(){
-	            this.eventsOf.collision.dispatch({ type: 'COLLISION' });
+	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
 	        }.bind(this));
 	        
 	        ship.animations.play('idle');
 	        
 	        if(keys.left.isDown){
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'left' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'left' });
 	        } else if(keys.right.isDown){
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'right' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'right' });
 	        } else {
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-rotate' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'no-rotate' });
 	        }
 	        
 	        if(keys.up.isDown){
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'up' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'up' });
 	        } else {
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'no-thrust' });
 	        }
 	        
 	        if(keys.space.isDown){
-	            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'space' });
+	            this.eventsOf.keys.dispatch({ type: actionTypes.SHOOT, time: this.game.time.now });
 	        }
 	    };
 	}
@@ -206,11 +207,15 @@
 	    
 	    this.onEvents = function(event){
 	        switch(event.type){
-	            case 'KEY': 
-	                onKeyPress.call(this, event);
+	            case 'MOVE': 
+	                onMove.call(this, event);
+	                break;
+	            case 'SHOOT':
+	                onShoot.call(this, event);
 	                break;
 	            case 'COLLISION':
 	                onCollision.call(this, event);
+	                break;
 	        }
 	    };
 	}
@@ -219,7 +224,7 @@
 	Ship.prototype.constructor = Ship;
 	
 	// reducers: 
-	function onKeyPress(event){
+	function onMove(event){
 	    switch (event.key) {
 	        case 'left':
 	            this.body.angularVelocity = -this.props.ROTATION_SPEED;
@@ -237,10 +242,11 @@
 	        case 'no-thrust':
 	            this.body.acceleration.setTo(0, 0);
 	            break;
-	        case 'space':
-	            this.shoot();
-	            break;
 	    }
+	}
+	
+	function onShoot(event){
+	    this.shoot();
 	}
 	
 	function onCollision(event){
@@ -334,6 +340,22 @@
 	Bullet.prototype.constructor = Bullet;
 	
 	module.exports = Bullet;
+
+/***/ },
+/* 6 */,
+/* 7 */
+/*!***********************************!*\
+  !*** ./client/src/actionTypes.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	var actionTypes = {
+	    MOVE: 'MOVE',
+	    SHOOT: 'SHOOT',
+	    COLLISION: 'COLLISION'
+	};
+	
+	module.exports = actionTypes;
 
 /***/ }
 /******/ ]);

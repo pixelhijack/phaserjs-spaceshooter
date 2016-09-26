@@ -1,3 +1,4 @@
+var actionTypes = require('./actionTypes.js');
 var Ship = require('./ship.js');
 var Asteroid = require('./asteroid.js');
 var Bullet = require('./bullet.js');
@@ -64,27 +65,27 @@ function AsteroidAdventures(){
         this.game.debug.text(this.game.time.fps, 5, 20);
         
         this.game.physics.arcade.collide(ship, asteroids, function(){
-            this.eventsOf.collision.dispatch({ type: 'COLLISION' });
+            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
         }.bind(this));
         
         ship.animations.play('idle');
         
         if(keys.left.isDown){
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'left' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'left' });
         } else if(keys.right.isDown){
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'right' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'right' });
         } else {
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-rotate' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'no-rotate' });
         }
         
         if(keys.up.isDown){
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'up' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'up' });
         } else {
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'no-thrust' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'no-thrust' });
         }
         
         if(keys.space.isDown){
-            this.eventsOf.keys.dispatch({ type: 'KEY', key: 'space' });
+            this.eventsOf.keys.dispatch({ type: actionTypes.SHOOT, time: this.game.time.now });
         }
     };
 }

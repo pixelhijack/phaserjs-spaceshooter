@@ -37,11 +37,15 @@ function Ship(game, x, y, sprite, props){
     
     this.onEvents = function(event){
         switch(event.type){
-            case 'KEY': 
-                onKeyPress.call(this, event);
+            case 'MOVE': 
+                onMove.call(this, event);
+                break;
+            case 'SHOOT':
+                onShoot.call(this, event);
                 break;
             case 'COLLISION':
                 onCollision.call(this, event);
+                break;
         }
     };
 }
@@ -50,7 +54,7 @@ Ship.prototype = Object.create(GameObject.prototype);
 Ship.prototype.constructor = Ship;
 
 // reducers: 
-function onKeyPress(event){
+function onMove(event){
     switch (event.key) {
         case 'left':
             this.body.angularVelocity = -this.props.ROTATION_SPEED;
@@ -68,10 +72,11 @@ function onKeyPress(event){
         case 'no-thrust':
             this.body.acceleration.setTo(0, 0);
             break;
-        case 'space':
-            this.shoot();
-            break;
     }
+}
+
+function onShoot(event){
+    this.shoot();
 }
 
 function onCollision(event){
