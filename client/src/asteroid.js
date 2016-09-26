@@ -8,6 +8,7 @@ function Asteroid(game, x, y, sprite){
     GameObject.call(this, game, x, y, sprite);
     this.animations.add('idle', [aRandomSprite], 10, true);
     this.body.bounce.setTo(1, 1);
+    this.body.collideWorldBounds = true;
     this.scale.x *= aRandomSize;
     this.scale.y *= aRandomSize;
     
@@ -16,7 +17,7 @@ function Asteroid(game, x, y, sprite){
     };
 }
 
-Asteroid.prototype = Object.create(Phaser.Sprite.prototype);
+Asteroid.prototype = Object.create(GameObject.prototype);
 Asteroid.prototype.constructor = Asteroid;
 
 module.exports = Asteroid;

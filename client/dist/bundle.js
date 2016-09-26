@@ -69,6 +69,7 @@
 
 	var Ship = __webpack_require__(/*! ./ship.js */ 2);
 	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 4);
+	var Bullet = __webpack_require__(/*! ./bullet.js */ 5);
 	
 	function AsteroidAdventures(){
 	    var keys, 
@@ -97,9 +98,18 @@
 	        ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships', {
 	            ROTATION_SPEED: 180, // degrees/second
 	            ACCELERATION: 200, // pixels/second/second
-	            MAX_SPEED: 250 // pixels/second
+	            MAX_SPEED: 250, // pixels/second
+	            NUMBER_OF_BULLETS: 10,
+	            SHOT_DELAY: 100
 	        });
 	        ship.animations.add('idle', ['43'], 10, true);
+	        
+	        // load those freakin bullets!
+	        for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
+	            var bullet = new Bullet(this.game, 0, 0, 'ships');
+	            ship.bullets.add(bullet);
+	            bullet.kill();
+	        }
 	        
 	        asteroids = this.game.add.group();
 	        
@@ -161,12 +171,33 @@
 	
 	function Ship(game, x, y, sprite, props){
 	    GameObject.call(this, game, x, y, sprite);
+	    this.body.collideWorldBounds = true;
 	    this.scale.x *= -1;
 	    
 	    this.props = props;
+	    this.states = {
+	        lastShot: 0
+	    };
+	    
+	    this.bullets = this.game.add.group();
 	    
 	    this.shoot = function(){
 	        
+	        if(this.states.lastShot + this.props.SHOT_DELAY > this.game.time.now){
+	            return;
+	        }
+	        this.states.lastShot = this.game.time.now;
+	        
+	        var bullet = this.bullets.getFirstDead();
+	        if(!bullet){ 
+	            return; 
+	        }
+	        bullet.revive();
+	        bullet.reset(this.x, this.y);
+	
+	        // Shoot it
+	        bullet.rotation = this.rotation;
+	        game.physics.arcade.velocityFromRotation(this.rotation, 400, bullet.body.velocity);
 	    };
 	    
 	    this.update = function(){
@@ -230,7 +261,6 @@
 	    Phaser.Sprite.call(this, game, x, y, sprite);
 	    this.game.add.existing(this);
 	    this.game.physics.enable(this, Phaser.Physics.ARCADE);
-	    this.body.collideWorldBounds = true;
 	    this.anchor.setTo(0.5, 0.5);
 	}
 	
@@ -264,6 +294,7 @@
 	    GameObject.call(this, game, x, y, sprite);
 	    this.animations.add('idle', [aRandomSprite], 10, true);
 	    this.body.bounce.setTo(1, 1);
+	    this.body.collideWorldBounds = true;
 	    this.scale.x *= aRandomSize;
 	    this.scale.y *= aRandomSize;
 	    
@@ -272,10 +303,37 @@
 	    };
 	}
 	
-	Asteroid.prototype = Object.create(Phaser.Sprite.prototype);
+	Asteroid.prototype = Object.create(GameObject.prototype);
 	Asteroid.prototype.constructor = Asteroid;
 	
 	module.exports = Asteroid;
+
+/***/ },
+/* 5 */
+/*!******************************!*\
+  !*** ./client/src/bullet.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	
+	function Bullet(game, x, y, sprite){
+	    
+	    GameObject.call(this, game, x, y, sprite);
+	    this.animations.add('idle', ['44'], 10, true);
+	    this.outOfBoundsKill = true;
+	    this.checkWorldBounds = true;
+	    this.allowRotation = true;
+	    
+	    this.update = function(){
+	        this.animations.play('idle');
+	    };
+	}
+	
+	Bullet.prototype = Object.create(GameObject.prototype);
+	Bullet.prototype.constructor = Bullet;
+	
+	module.exports = Bullet;
 
 /***/ }
 /******/ ]);

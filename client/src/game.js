@@ -1,5 +1,6 @@
 var Ship = require('./ship.js');
 var Asteroid = require('./asteroid.js');
+var Bullet = require('./bullet.js');
 
 function AsteroidAdventures(){
     var keys, 
@@ -28,9 +29,18 @@ function AsteroidAdventures(){
         ship = new Ship(this.game, this.world.centerX, this.world.centerY, 'ships', {
             ROTATION_SPEED: 180, // degrees/second
             ACCELERATION: 200, // pixels/second/second
-            MAX_SPEED: 250 // pixels/second
+            MAX_SPEED: 250, // pixels/second
+            NUMBER_OF_BULLETS: 10,
+            SHOT_DELAY: 100
         });
         ship.animations.add('idle', ['43'], 10, true);
+        
+        // load those freakin bullets!
+        for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
+            var bullet = new Bullet(this.game, 0, 0, 'ships');
+            ship.bullets.add(bullet);
+            bullet.kill();
+        }
         
         asteroids = this.game.add.group();
         
