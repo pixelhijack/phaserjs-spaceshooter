@@ -121,8 +121,8 @@
 	            asteroids.add(asteroid);
 	        }
 	        
-	        ship.listen(this.eventsOf.keys, ship.onEvents);
-	        ship.listen(this.eventsOf.collision, ship.onEvents);
+	        ship.listen(this.eventsOf.keys, ship.setState);
+	        ship.listen(this.eventsOf.collision, ship.setState);
 	        
 	        keys = this.game.input.keyboard.createCursorKeys();
 	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -168,6 +168,7 @@
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 7);
 	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
 	
 	function Ship(game, x, y, sprite, props){
@@ -176,21 +177,41 @@
 	    this.scale.x *= -1;
 	    
 	    this.props = props;
-	    this.states = {
-	        lastShot: 0
-	    };
 	    
 	    this.bullets = this.game.add.group();
 	    
+	    this.state = {
+	        queue: [],
+	        current: []
+	    };
+	    
+	    this.setState = function(state){
+	        this.state.queue.push(state);
+	    };
+	    
+	    this.updateState = function(){
+	        var next = this.state.queue.shift();
+	        this.state.current.push(next);
+	        // too much in queue... :'( '
+	        console.log('[STATE] %s queue, current: ', this.state.queue.length, JSON.stringify(this.state.current));
+	        this.state.current.forEach(function(state, i){
+	            this.react(state);
+	            if(!state.time || state.time < this.game.time.now){
+	                this.state.current.splice(i, 1);
+	            }
+	        }.bind(this));
+	    };
+	    
+	    this.hasState = function(state){
+	        return this.state.current.some(function(currentState){
+	            return currentState.type === state;
+	        });
+	    };
+	    
 	    this.shoot = function(){
 	        
-	        if(this.states.lastShot + this.props.SHOT_DELAY > this.game.time.now){
-	            return;
-	        }
-	        this.states.lastShot = this.game.time.now;
-	        
 	        var bullet = this.bullets.getFirstDead();
-	        if(!bullet){ 
+	        if(!bullet || this.hasState(actionTypes.SHOOT)){ 
 	            return; 
 	        }
 	        bullet.revive();
@@ -202,10 +223,10 @@
 	    };
 	    
 	    this.update = function(){
-	        // this.body.rotation = this.body.angle * 180 / Math.PI;
+	        this.updateState();
 	    };
 	    
-	    this.onEvents = function(event){
+	    this.react = function(event){
 	        switch(event.type){
 	            case 'MOVE': 
 	                onMove.call(this, event);

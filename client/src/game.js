@@ -52,8 +52,8 @@ function AsteroidAdventures(){
             asteroids.add(asteroid);
         }
         
-        ship.listen(this.eventsOf.keys, ship.onEvents);
-        ship.listen(this.eventsOf.collision, ship.onEvents);
+        ship.listen(this.eventsOf.keys, ship.setState);
+        ship.listen(this.eventsOf.collision, ship.setState);
         
         keys = this.game.input.keyboard.createCursorKeys();
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
