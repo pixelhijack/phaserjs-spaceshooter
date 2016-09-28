@@ -67,7 +67,7 @@
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 7);
+	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 6);
 	var Ship = __webpack_require__(/*! ./ship.js */ 2);
 	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 4);
 	var Bullet = __webpack_require__(/*! ./bullet.js */ 5);
@@ -108,6 +108,7 @@
 	        // load those freakin bullets!
 	        for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
 	            var bullet = new Bullet(this.game, 0, 0, 'ships');
+	            bullet.listen(this.eventsOf.collision, bullet.explode);
 	            ship.bullets.add(bullet);
 	            bullet.kill();
 	        }
@@ -117,7 +118,7 @@
 	        for(var i=0;i<50;i++){
 	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
 	            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
-	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50
+	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50;
 	            asteroids.add(asteroid);
 	        }
 	        
@@ -134,6 +135,10 @@
 	        this.game.debug.text(this.game.time.fps, 5, 20);
 	        
 	        this.game.physics.arcade.collide(ship, asteroids, function(){
+	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
+	        }.bind(this));
+	        
+	        this.game.physics.arcade.collide(ship.bullets, asteroids, function(){
 	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
 	        }.bind(this));
 	        
@@ -327,12 +332,18 @@
 	    
 	    GameObject.call(this, game, x, y, sprite);
 	    this.animations.add('idle', ['44'], 10, true);
+	    this.animations.add('explode', ['60', '63', '64'], 10, false);
 	    this.outOfBoundsKill = true;
 	    this.checkWorldBounds = true;
 	    this.allowRotation = true;
 	    
 	    this.update = function(){
 	        this.animations.play('idle');
+	    };
+	    
+	    this.explode = function(){
+	        this.animations.play('explode');
+	        this.kill();
 	    };
 	}
 	
@@ -342,8 +353,7 @@
 	module.exports = Bullet;
 
 /***/ },
-/* 6 */,
-/* 7 */
+/* 6 */
 /*!***********************************!*\
   !*** ./client/src/actionTypes.js ***!
   \***********************************/
