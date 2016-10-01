@@ -115,11 +115,12 @@
 	        
 	        asteroids = this.game.add.group();
 	        
-	        for(var i=0;i<20;i++){
+	        for(var j=0;j<20;j++){
 	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
 	            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
 	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50;
 	            asteroids.add(asteroid);
+	            asteroid.listen(this.eventsOf.collision, asteroid.onHit);
 	        }
 	        
 	        ship.listen(this.eventsOf.keys, ship.onEvents);
@@ -133,6 +134,10 @@
 	        
 	        // fps debugging 
 	        this.game.debug.text(this.game.time.fps, 5, 20);
+	        
+	        asteroids.forEachAlive(function(sprite){
+	            sprite.debug(sprite.id);
+	        });
 	        
 	        this.game.physics.arcade.collide(ship, asteroids, function(){
 	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
@@ -195,6 +200,7 @@
 	
 	function Ship(game, x, y, sprite, props){
 	    GameObject.call(this, game, x, y, sprite);
+	    this.setId();
 	    this.body.collideWorldBounds = true;
 	    this.scale.x *= -1;
 	    
@@ -287,7 +293,13 @@
 
 	function GameObject(game, x, y, sprite){
 	    this.game = game;
+	    
 	    Phaser.Sprite.call(this, game, x, y, sprite);
+	    this.setId();
+	    
+	    this._debugText = this.addChild(this.game.add.text(20, -20, 'debug', { font: "12px Arial", fill: "#ffffff" }));
+	    this._debugText.visible = false;
+	    
 	    this.game.add.existing(this);
 	    this.game.physics.enable(this, Phaser.Physics.ARCADE);
 	    this.anchor.setTo(0.5, 0.5);
@@ -304,6 +316,15 @@
 	    console.log('[%s]: ', this.constructor.name, event);
 	};
 	
+	GameObject.prototype.setId = function(){
+	    this.id = this.constructor.name + '-' + (this.x | 0) + '-' + (this.y | 0);
+	};
+	
+	GameObject.prototype.debug = function(toDebug){
+	  this._debugText.visible = true;
+	  this._debugText.setText(toDebug || '');
+	};
+	
 	module.exports = GameObject;
 
 /***/ },
@@ -318,9 +339,10 @@
 	function Asteroid(game, x, y, sprite){
 	    var asteroidSprites = ['01','02','03','04','05','06','07','08'], 
 	        aRandomSprite = Math.floor(Math.random() * asteroidSprites.length),
-	        aRandomSize = Math.random() * 1;
+	        aRandomSize = Math.random() * 0.2 + 1;
 	    
 	    GameObject.call(this, game, x, y, sprite);
+	    this.setId();
 	    this.animations.add('idle', [aRandomSprite], 10, true);
 	    this.body.bounce.setTo(1, 1);
 	    this.body.collideWorldBounds = true;
@@ -329,6 +351,12 @@
 	    
 	    this.update = function(){
 	        this.animations.play('idle');
+	    };
+	    
+	    this.onHit = function(event){
+	        if(event.type === 'HIT'){
+	            this.kill();
+	        }
 	    };
 	}
 	
@@ -353,6 +381,7 @@
 	    this.state = 'idle';
 	    
 	    GameObject.call(this, game, x, y, sprite);
+	    this.setId();
 	    this.animations.add('idle', ['44'], 10, true);
 	    explosion = this.animations.add('explode', ['60', '63', '64'], 10, false);
 	    explosion.onComplete.add(function(){

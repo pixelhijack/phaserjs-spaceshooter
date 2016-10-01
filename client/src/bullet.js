@@ -7,6 +7,7 @@ function Bullet(game, x, y, sprite){
     this.state = 'idle';
     
     GameObject.call(this, game, x, y, sprite);
+    this.setId();
     this.animations.add('idle', ['44'], 10, true);
     explosion = this.animations.add('explode', ['60', '63', '64'], 10, false);
     explosion.onComplete.add(function(){

@@ -46,11 +46,12 @@ function AsteroidAdventures(){
         
         asteroids = this.game.add.group();
         
-        for(var i=0;i<20;i++){
+        for(var j=0;j<20;j++){
             var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
             asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
             asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50;
             asteroids.add(asteroid);
+            asteroid.listen(this.eventsOf.collision, asteroid.onHit);
         }
         
         ship.listen(this.eventsOf.keys, ship.onEvents);
@@ -64,6 +65,10 @@ function AsteroidAdventures(){
         
         // fps debugging 
         this.game.debug.text(this.game.time.fps, 5, 20);
+        
+        asteroids.forEachAlive(function(sprite){
+            sprite.debug(sprite.id);
+        });
         
         this.game.physics.arcade.collide(ship, asteroids, function(){
             this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });

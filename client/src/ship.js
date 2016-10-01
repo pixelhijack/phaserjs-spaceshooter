@@ -2,6 +2,7 @@ var GameObject = require('./gameobject.js');
 
 function Ship(game, x, y, sprite, props){
     GameObject.call(this, game, x, y, sprite);
+    this.setId();
     this.body.collideWorldBounds = true;
     this.scale.x *= -1;
     
