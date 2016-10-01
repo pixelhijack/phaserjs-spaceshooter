@@ -1,7 +1,8 @@
 var actionTypes = {
     MOVE: 'MOVE',
     SHOOT: 'SHOOT',
-    COLLISION: 'COLLISION'
+    COLLISION: 'COLLISION',
+    HIT: 'HIT'
 };
 
 module.exports = actionTypes;

@@ -67,10 +67,10 @@
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 6);
-	var Ship = __webpack_require__(/*! ./ship.js */ 2);
-	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 4);
-	var Bullet = __webpack_require__(/*! ./bullet.js */ 5);
+	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 2);
+	var Ship = __webpack_require__(/*! ./ship.js */ 3);
+	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 5);
+	var Bullet = __webpack_require__(/*! ./bullet.js */ 6);
 	
 	function AsteroidAdventures(){
 	    var keys, 
@@ -115,7 +115,7 @@
 	        
 	        asteroids = this.game.add.group();
 	        
-	        for(var i=0;i<50;i++){
+	        for(var i=0;i<20;i++){
 	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
 	            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
 	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50;
@@ -138,8 +138,10 @@
 	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
 	        }.bind(this));
 	        
-	        this.game.physics.arcade.collide(ship.bullets, asteroids, function(){
-	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
+	        ship.bullets.forEachAlive(function(bullet){
+	            this.game.physics.arcade.collide(bullet, asteroids, function(){
+	                this.eventsOf.collision.dispatch({ type: actionTypes.HIT });
+	            }.bind(this));
 	        }.bind(this));
 	        
 	        ship.animations.play('idle');
@@ -168,12 +170,28 @@
 
 /***/ },
 /* 2 */
+/*!***********************************!*\
+  !*** ./client/src/actionTypes.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	var actionTypes = {
+	    MOVE: 'MOVE',
+	    SHOOT: 'SHOOT',
+	    COLLISION: 'COLLISION',
+	    HIT: 'HIT'
+	};
+	
+	module.exports = actionTypes;
+
+/***/ },
+/* 3 */
 /*!****************************!*\
   !*** ./client/src/ship.js ***!
   \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
 	function Ship(game, x, y, sprite, props){
 	    GameObject.call(this, game, x, y, sprite);
@@ -261,7 +279,7 @@
 	module.exports = Ship;
 
 /***/ },
-/* 3 */
+/* 4 */
 /*!**********************************!*\
   !*** ./client/src/gameobject.js ***!
   \**********************************/
@@ -289,13 +307,13 @@
 	module.exports = GameObject;
 
 /***/ },
-/* 4 */
+/* 5 */
 /*!********************************!*\
   !*** ./client/src/asteroid.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
 	function Asteroid(game, x, y, sprite){
 	    var asteroidSprites = ['01','02','03','04','05','06','07','08'], 
@@ -320,30 +338,39 @@
 	module.exports = Asteroid;
 
 /***/ },
-/* 5 */
+/* 6 */
 /*!******************************!*\
   !*** ./client/src/bullet.js ***!
   \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var GameObject = __webpack_require__(/*! ./gameobject.js */ 3);
+	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
 	function Bullet(game, x, y, sprite){
 	    
+	    var explosion;
+	    
+	    this.state = 'idle';
+	    
 	    GameObject.call(this, game, x, y, sprite);
 	    this.animations.add('idle', ['44'], 10, true);
-	    this.animations.add('explode', ['60', '63', '64'], 10, false);
+	    explosion = this.animations.add('explode', ['60', '63', '64'], 10, false);
+	    explosion.onComplete.add(function(){
+	        this.kill();
+	        this.state = 'idle';
+	    }, this);
 	    this.outOfBoundsKill = true;
 	    this.checkWorldBounds = true;
 	    this.allowRotation = true;
 	    
 	    this.update = function(){
-	        this.animations.play('idle');
+	        this.animations.play(this.state);
 	    };
 	    
-	    this.explode = function(){
-	        this.animations.play('explode');
-	        this.kill();
+	    this.explode = function(event){
+	        if(event.type === 'HIT'){
+	            this.state = 'explode';
+	        }
 	    };
 	}
 	
@@ -351,21 +378,6 @@
 	Bullet.prototype.constructor = Bullet;
 	
 	module.exports = Bullet;
-
-/***/ },
-/* 6 */
-/*!***********************************!*\
-  !*** ./client/src/actionTypes.js ***!
-  \***********************************/
-/***/ function(module, exports) {
-
-	var actionTypes = {
-	    MOVE: 'MOVE',
-	    SHOOT: 'SHOOT',
-	    COLLISION: 'COLLISION'
-	};
-	
-	module.exports = actionTypes;
 
 /***/ }
 /******/ ]);
