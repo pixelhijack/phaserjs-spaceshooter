@@ -7,6 +7,11 @@ function Ship(game, x, y, sprite, props){
     this.scale.x *= -1;
     
     this.props = props;
+    
+    this.props.animations.forEach(function(animation){
+        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
+    }.bind(this));
+    
     this.states = {
         lastShot: 0
     };
@@ -30,10 +35,6 @@ function Ship(game, x, y, sprite, props){
         // Shoot it
         bullet.rotation = this.rotation;
         game.physics.arcade.velocityFromRotation(this.rotation, 400, bullet.body.velocity);
-    };
-    
-    this.update = function(){
-        // this.body.rotation = this.body.angle * 180 / Math.PI;
     };
     
     this.onEvents = function(event){

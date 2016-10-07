@@ -32,9 +32,11 @@ function AsteroidAdventures(){
             ACCELERATION: 200, // pixels/second/second
             MAX_SPEED: 250, // pixels/second
             NUMBER_OF_BULLETS: 10,
-            SHOT_DELAY: 100
+            SHOT_DELAY: 100, 
+            animations: [
+                { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
+            ]
         });
-        ship.animations.add('idle', ['43'], 10, true);
         
         // load those freakin bullets!
         for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
@@ -79,8 +81,6 @@ function AsteroidAdventures(){
                 this.eventsOf.collision.dispatch({ type: actionTypes.HIT });
             }.bind(this));
         }.bind(this));
-        
-        ship.animations.play('idle');
         
         if(keys.left.isDown){
             this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'left' });

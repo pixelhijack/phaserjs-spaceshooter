@@ -101,9 +101,11 @@
 	            ACCELERATION: 200, // pixels/second/second
 	            MAX_SPEED: 250, // pixels/second
 	            NUMBER_OF_BULLETS: 10,
-	            SHOT_DELAY: 100
+	            SHOT_DELAY: 100, 
+	            animations: [
+	                { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
+	            ]
 	        });
-	        ship.animations.add('idle', ['43'], 10, true);
 	        
 	        // load those freakin bullets!
 	        for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
@@ -148,8 +150,6 @@
 	                this.eventsOf.collision.dispatch({ type: actionTypes.HIT });
 	            }.bind(this));
 	        }.bind(this));
-	        
-	        ship.animations.play('idle');
 	        
 	        if(keys.left.isDown){
 	            this.eventsOf.keys.dispatch({ type: actionTypes.MOVE, key: 'left' });
@@ -205,6 +205,11 @@
 	    this.scale.x *= -1;
 	    
 	    this.props = props;
+	    
+	    this.props.animations.forEach(function(animation){
+	        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
+	    }.bind(this));
+	    
 	    this.states = {
 	        lastShot: 0
 	    };
@@ -228,10 +233,6 @@
 	        // Shoot it
 	        bullet.rotation = this.rotation;
 	        game.physics.arcade.velocityFromRotation(this.rotation, 400, bullet.body.velocity);
-	    };
-	    
-	    this.update = function(){
-	        // this.body.rotation = this.body.angle * 180 / Math.PI;
 	    };
 	    
 	    this.onEvents = function(event){
@@ -292,7 +293,16 @@
 /***/ function(module, exports) {
 
 	function GameObject(game, x, y, sprite){
+	    
 	    this.game = game;
+	    
+	    // state object: { type: 'STUN', time: 12077484, priority: 1 }
+	    this.state = [];
+	    this.DEFAULT_STATE = {
+	        type: 'IDLE',
+	        time: 0,
+	        priority: 0
+	    };
 	    
 	    Phaser.Sprite.call(this, game, x, y, sprite);
 	    this.setId();
@@ -314,6 +324,23 @@
 	
 	GameObject.prototype.onEvents = function(event){
 	    console.log('[%s]: ', this.constructor.name, event);
+	};
+	
+	GameObject.prototype.setState = function(state){
+	    this.state.push(state);
+	};
+	
+	GameObject.prototype.getState = function(){
+	    if(!this.state.length){
+	        return this.DEFAULT_STATE;
+	    }
+	    return this.state[0];
+	};
+	
+	GameObject.prototype.update = function(){
+	    if(!this.state){ return; }
+	    var state = this.getState();
+	    this.animations.play(state.type);
 	};
 	
 	GameObject.prototype.setId = function(){

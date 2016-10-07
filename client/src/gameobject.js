@@ -1,5 +1,14 @@
 function GameObject(game, x, y, sprite){
+    
     this.game = game;
+    
+    // state object: { type: 'STUN', time: 12077484, priority: 1 }
+    this.state = [];
+    this.DEFAULT_STATE = {
+        type: 'IDLE',
+        time: 0,
+        priority: 0
+    };
     
     Phaser.Sprite.call(this, game, x, y, sprite);
     this.setId();
@@ -21,6 +30,23 @@ GameObject.prototype.listen = function(eventSource, callback){
 
 GameObject.prototype.onEvents = function(event){
     console.log('[%s]: ', this.constructor.name, event);
+};
+
+GameObject.prototype.setState = function(state){
+    this.state.push(state);
+};
+
+GameObject.prototype.getState = function(){
+    if(!this.state.length){
+        return this.DEFAULT_STATE;
+    }
+    return this.state[0];
+};
+
+GameObject.prototype.update = function(){
+    if(!this.state){ return; }
+    var state = this.getState();
+    this.animations.play(state.type);
 };
 
 GameObject.prototype.setId = function(){
