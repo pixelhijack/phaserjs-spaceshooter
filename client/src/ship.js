@@ -1,29 +1,24 @@
 var GameObject = require('./gameobject.js');
 
 function Ship(game, x, y, sprite, props){
-    GameObject.call(this, game, x, y, sprite);
+    GameObject.call(this, game, x, y, sprite, props);
     this.setId();
     this.body.collideWorldBounds = true;
     this.scale.x *= -1;
     
-    this.props = props;
-    
-    this.props.animations.forEach(function(animation){
-        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
-    }.bind(this));
-    
-    this.states = {
-        lastShot: 0
-    };
-    
     this.bullets = this.game.add.group();
     
     this.shoot = function(){
-        
-        if(this.states.lastShot + this.props.SHOT_DELAY > this.game.time.now){
+
+        if(this.hasState('SHOOT')){
             return;
         }
-        this.states.lastShot = this.game.time.now;
+        
+        this.setState({ 
+            type: 'SHOOT', 
+            priority: 1, 
+            time: this.game.time.now + this.props.SHOT_DELAY 
+        });
         
         var bullet = this.bullets.getFirstDead();
         if(!bullet){ 

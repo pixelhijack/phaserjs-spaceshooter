@@ -32,7 +32,7 @@ function AsteroidAdventures(){
             ACCELERATION: 200, // pixels/second/second
             MAX_SPEED: 250, // pixels/second
             NUMBER_OF_BULLETS: 10,
-            SHOT_DELAY: 100, 
+            SHOT_DELAY: 200, 
             animations: [
                 { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
             ]

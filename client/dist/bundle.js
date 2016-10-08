@@ -101,7 +101,7 @@
 	            ACCELERATION: 200, // pixels/second/second
 	            MAX_SPEED: 250, // pixels/second
 	            NUMBER_OF_BULLETS: 10,
-	            SHOT_DELAY: 100, 
+	            SHOT_DELAY: 200, 
 	            animations: [
 	                { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
 	            ]
@@ -199,29 +199,24 @@
 	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
 	function Ship(game, x, y, sprite, props){
-	    GameObject.call(this, game, x, y, sprite);
+	    GameObject.call(this, game, x, y, sprite, props);
 	    this.setId();
 	    this.body.collideWorldBounds = true;
 	    this.scale.x *= -1;
 	    
-	    this.props = props;
-	    
-	    this.props.animations.forEach(function(animation){
-	        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
-	    }.bind(this));
-	    
-	    this.states = {
-	        lastShot: 0
-	    };
-	    
 	    this.bullets = this.game.add.group();
 	    
 	    this.shoot = function(){
-	        
-	        if(this.states.lastShot + this.props.SHOT_DELAY > this.game.time.now){
+	
+	        if(this.hasState('SHOOT')){
 	            return;
 	        }
-	        this.states.lastShot = this.game.time.now;
+	        
+	        this.setState({ 
+	            type: 'SHOOT', 
+	            priority: 1, 
+	            time: this.game.time.now + this.props.SHOT_DELAY 
+	        });
 	        
 	        var bullet = this.bullets.getFirstDead();
 	        if(!bullet){ 
@@ -292,9 +287,10 @@
   \**********************************/
 /***/ function(module, exports) {
 
-	function GameObject(game, x, y, sprite){
+	function GameObject(game, x, y, sprite, props){
 	    
 	    this.game = game;
+	    this.props = props || { animations: [] };
 	    
 	    // state object: { type: 'STUN', time: 12077484, priority: 1 }
 	    this.state = [];
@@ -306,6 +302,10 @@
 	    
 	    Phaser.Sprite.call(this, game, x, y, sprite);
 	    this.setId();
+	    
+	    this.props.animations.forEach(function(animation){
+	        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
+	    }.bind(this));
 	    
 	    this._debugText = this.addChild(this.game.add.text(20, -20, 'debug', { font: "12px Arial", fill: "#ffffff" }));
 	    this._debugText.visible = false;
@@ -330,17 +330,34 @@
 	    this.state.push(state);
 	};
 	
+	GameObject.prototype.clearState = function(state){
+	    this.state = this.state.filter(function(state){
+	        return state.time > this.game.time.now;
+	    }.bind(this));
+	};
+	
 	GameObject.prototype.getState = function(){
+	    // 1. default if no other
+	    // 2. highest priority, pop
+	    // 3. longest time-span
 	    if(!this.state.length){
 	        return this.DEFAULT_STATE;
 	    }
 	    return this.state[0];
 	};
 	
+	GameObject.prototype.hasState = function(stateToTest){
+	    return this.state.some(function(state){
+	        return state.type === stateToTest && state.time > this.game.time.now;
+	    }.bind(this));
+	};
+	
 	GameObject.prototype.update = function(){
 	    if(!this.state){ return; }
+	    console.log('state length: ', this.state.length);
 	    var state = this.getState();
 	    this.animations.play(state.type);
+	    this.clearState();
 	};
 	
 	GameObject.prototype.setId = function(){

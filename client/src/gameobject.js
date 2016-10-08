@@ -1,6 +1,7 @@
-function GameObject(game, x, y, sprite){
+function GameObject(game, x, y, sprite, props){
     
     this.game = game;
+    this.props = props || { animations: [] };
     
     // state object: { type: 'STUN', time: 12077484, priority: 1 }
     this.state = [];
@@ -12,6 +13,10 @@ function GameObject(game, x, y, sprite){
     
     Phaser.Sprite.call(this, game, x, y, sprite);
     this.setId();
+    
+    this.props.animations.forEach(function(animation){
+        this.animations.add(animation.name, animation.frames, animation.fps, animation.loop);
+    }.bind(this));
     
     this._debugText = this.addChild(this.game.add.text(20, -20, 'debug', { font: "12px Arial", fill: "#ffffff" }));
     this._debugText.visible = false;
@@ -36,17 +41,34 @@ GameObject.prototype.setState = function(state){
     this.state.push(state);
 };
 
+GameObject.prototype.clearState = function(state){
+    this.state = this.state.filter(function(state){
+        return state.time > this.game.time.now;
+    }.bind(this));
+};
+
 GameObject.prototype.getState = function(){
+    // 1. default if no other
+    // 2. highest priority, pop
+    // 3. longest time-span
     if(!this.state.length){
         return this.DEFAULT_STATE;
     }
     return this.state[0];
 };
 
+GameObject.prototype.hasState = function(stateToTest){
+    return this.state.some(function(state){
+        return state.type === stateToTest && state.time > this.game.time.now;
+    }.bind(this));
+};
+
 GameObject.prototype.update = function(){
     if(!this.state){ return; }
+    console.log('state length: ', this.state.length);
     var state = this.getState();
     this.animations.play(state.type);
+    this.clearState();
 };
 
 GameObject.prototype.setId = function(){
