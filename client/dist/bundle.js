@@ -109,7 +109,21 @@
 	        
 	        // load those freakin bullets!
 	        for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
-	            var bullet = new Bullet(this.game, 0, 0, 'ships');
+	            var bullet = new Bullet(this.game, 0, 0, 'ships', {
+	                animations: [
+	                    { 
+	                        name: 'IDLE', 
+	                        frames: ['44'], 
+	                        fps: 10, 
+	                        loop: true
+	                    }, { 
+	                        name: 'EXPLODE', 
+	                        frames: ['60', '63', '64'], 
+	                        fps: 10, 
+	                        loop: false
+	                    }
+	                ]
+	            });
 	            bullet.listen(this.eventsOf.collision, bullet.explode);
 	            ship.bullets.add(bullet);
 	            bullet.kill();
@@ -232,6 +246,7 @@
 	            return; 
 	        }
 	        bullet.revive();
+	        bullet.state = [];
 	        bullet.reset(this.x, this.y);
 	
 	        // Shoot it
@@ -420,37 +435,27 @@
 
 	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
-	function Bullet(game, x, y, sprite){
+	function Bullet(game, x, y, sprite, props){
 	    
-	    var explosion;
-	    
-	    this.state = 'idle';
-	    
-	    GameObject.call(this, game, x, y, sprite);
+	    GameObject.call(this, game, x, y, sprite, props);
 	    this.setId();
-	    this.animations.add('idle', ['44'], 10, true);
-	    explosion = this.animations.add('explode', ['60', '63', '64'], 10, false);
-	    explosion.onComplete.add(function(){
-	        this.kill();
-	        this.state = 'idle';
-	    }, this);
+	    
 	    this.outOfBoundsKill = true;
 	    this.checkWorldBounds = true;
 	    this.allowRotation = true;
-	    
-	    this.update = function(){
-	        this.animations.play(this.state);
-	    };
-	    
-	    this.explode = function(event){
-	        if(event.type === 'HIT'){
-	            this.state = 'explode';
-	        }
-	    };
 	}
 	
 	Bullet.prototype = Object.create(GameObject.prototype);
 	Bullet.prototype.constructor = Bullet;
+	
+	Bullet.prototype.explode = function(event){
+	    if(event.type === 'HIT'){
+	        this.setState({ type: 'EXPLODE', priority: 3, time: this.game.time.now + 100 });
+	        this.game.time.events.add(Phaser.Timer.SECOND * 0.1, function(){
+	            this.setState({ type: 'DIE', priority: 10, time: this.game.time.now + 300 });
+	        }, this);
+	    }
+	};
 	
 	module.exports = Bullet;
 

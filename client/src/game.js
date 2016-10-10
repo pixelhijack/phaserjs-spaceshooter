@@ -40,7 +40,21 @@ function AsteroidAdventures(){
         
         // load those freakin bullets!
         for(var i = 0; i < ship.props.NUMBER_OF_BULLETS; i++) {
-            var bullet = new Bullet(this.game, 0, 0, 'ships');
+            var bullet = new Bullet(this.game, 0, 0, 'ships', {
+                animations: [
+                    { 
+                        name: 'IDLE', 
+                        frames: ['44'], 
+                        fps: 10, 
+                        loop: true
+                    }, { 
+                        name: 'EXPLODE', 
+                        frames: ['60', '63', '64'], 
+                        fps: 10, 
+                        loop: false
+                    }
+                ]
+            });
             bullet.listen(this.eventsOf.collision, bullet.explode);
             ship.bullets.add(bullet);
             bullet.kill();

@@ -25,6 +25,7 @@ function Ship(game, x, y, sprite, props){
             return; 
         }
         bullet.revive();
+        bullet.state = [];
         bullet.reset(this.x, this.y);
 
         // Shoot it
