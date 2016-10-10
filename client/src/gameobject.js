@@ -65,7 +65,6 @@ GameObject.prototype.hasState = function(stateToTest){
 
 GameObject.prototype.update = function(){
     if(!this.state){ return; }
-    console.log('state length: ', this.state.length);
     var state = this.getState();
     this.animations.play(state.type);
     this.clearState();

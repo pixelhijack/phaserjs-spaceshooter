@@ -117,8 +117,19 @@
 	        
 	        asteroids = this.game.add.group();
 	        
+	        var asteroidSprites = ['01','02','03','04','05','06','07','08'];
+	        
 	        for(var j=0;j<20;j++){
-	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids');
+	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids', {
+	                animations: [
+	                    { 
+	                        name: 'IDLE', 
+	                        frames: [Math.floor(Math.random() * asteroidSprites.length)], 
+	                        fps: 10, 
+	                        loop: true
+	                    }
+	                ]
+	            });
 	            asteroid.body.velocity.x = asteroid.body.velocity.x + Math.random() * 50 - Math.random() * 50;
 	            asteroid.body.velocity.y = asteroid.body.velocity.y + Math.random() * 50 - Math.random() * 50;
 	            asteroids.add(asteroid);
@@ -145,10 +156,8 @@
 	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
 	        }.bind(this));
 	        
-	        ship.bullets.forEachAlive(function(bullet){
-	            this.game.physics.arcade.collide(bullet, asteroids, function(){
-	                this.eventsOf.collision.dispatch({ type: actionTypes.HIT });
-	            }.bind(this));
+	        this.game.physics.arcade.collide(ship.bullets, asteroids, function(bullet, asteroid){
+	            this.eventsOf.collision.dispatch({ type: actionTypes.HIT, target: asteroid.id });
 	        }.bind(this));
 	        
 	        if(keys.left.isDown){
@@ -354,7 +363,6 @@
 	
 	GameObject.prototype.update = function(){
 	    if(!this.state){ return; }
-	    console.log('state length: ', this.state.length);
 	    var state = this.getState();
 	    this.animations.play(state.type);
 	    this.clearState();
@@ -384,32 +392,22 @@
 
 	var GameObject = __webpack_require__(/*! ./gameobject.js */ 4);
 	
-	function Asteroid(game, x, y, sprite){
-	    var asteroidSprites = ['01','02','03','04','05','06','07','08'], 
-	        aRandomSprite = Math.floor(Math.random() * asteroidSprites.length),
-	        aRandomSize = Math.random() * 0.2 + 1;
+	function Asteroid(game, x, y, sprite, props){
 	    
-	    GameObject.call(this, game, x, y, sprite);
+	    GameObject.call(this, game, x, y, sprite, props);
 	    this.setId();
-	    this.animations.add('idle', [aRandomSprite], 10, true);
 	    this.body.bounce.setTo(1, 1);
 	    this.body.collideWorldBounds = true;
-	    this.scale.x *= aRandomSize;
-	    this.scale.y *= aRandomSize;
-	    
-	    this.update = function(){
-	        this.animations.play('idle');
-	    };
-	    
-	    this.onHit = function(event){
-	        if(event.type === 'HIT'){
-	            this.kill();
-	        }
-	    };
 	}
 	
 	Asteroid.prototype = Object.create(GameObject.prototype);
 	Asteroid.prototype.constructor = Asteroid;
+	
+	Asteroid.prototype.onHit = function(event){
+	    if(event.type === 'HIT' && event.target === this.id){
+	        this.kill();
+	    }
+	};
 	
 	module.exports = Asteroid;
 
