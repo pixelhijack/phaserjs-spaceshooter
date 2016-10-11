@@ -1,3 +1,5 @@
+var hasId = require('./mixins/hasId.js');
+
 function GameObject(game, x, y, sprite, props){
     
     this.game = game;
@@ -28,6 +30,8 @@ function GameObject(game, x, y, sprite, props){
 
 GameObject.prototype = Object.create(Phaser.Sprite.prototype);
 GameObject.prototype.constructor = GameObject;
+
+GameObject.prototype = Object.assign(GameObject.prototype, hasId);
 
 GameObject.prototype.listen = function(eventSource, callback){
     eventSource.add(callback, this);
@@ -68,14 +72,6 @@ GameObject.prototype.update = function(){
     var state = this.getState();
     this.animations.play(state.type);
     this.clearState();
-};
-
-GameObject.prototype.setId = function(){
-    this.id = this.constructor.name + '-' +
-        (this.x | 0) + '-' +
-        (this.y | 0) + '-' +
-        Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-
 };
 
 GameObject.prototype.debug = function(toDebug){

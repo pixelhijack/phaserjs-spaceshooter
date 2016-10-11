@@ -69,8 +69,8 @@
 
 	var actionTypes = __webpack_require__(/*! ./actionTypes.js */ 2);
 	var Ship = __webpack_require__(/*! ./ship.js */ 3);
-	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 5);
-	var Bullet = __webpack_require__(/*! ./bullet.js */ 6);
+	var Asteroid = __webpack_require__(/*! ./asteroid.js */ 6);
+	var Bullet = __webpack_require__(/*! ./bullet.js */ 7);
 	
 	function AsteroidAdventures(){
 	    var keys, 
@@ -309,8 +309,10 @@
 /*!**********************************!*\
   !*** ./client/src/gameobject.js ***!
   \**********************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
+	var hasId = __webpack_require__(/*! ./mixins/hasId.js */ 5);
+	
 	function GameObject(game, x, y, sprite, props){
 	    
 	    this.game = game;
@@ -341,6 +343,8 @@
 	
 	GameObject.prototype = Object.create(Phaser.Sprite.prototype);
 	GameObject.prototype.constructor = GameObject;
+	
+	GameObject.prototype = Object.assign(GameObject.prototype, hasId);
 	
 	GameObject.prototype.listen = function(eventSource, callback){
 	    eventSource.add(callback, this);
@@ -383,14 +387,6 @@
 	    this.clearState();
 	};
 	
-	GameObject.prototype.setId = function(){
-	    this.id = this.constructor.name + '-' +
-	        (this.x | 0) + '-' +
-	        (this.y | 0) + '-' +
-	        Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-	
-	};
-	
 	GameObject.prototype.debug = function(toDebug){
 	  this._debugText.visible = true;
 	  this._debugText.setText(toDebug || '');
@@ -400,6 +396,25 @@
 
 /***/ },
 /* 5 */
+/*!************************************!*\
+  !*** ./client/src/mixins/hasId.js ***!
+  \************************************/
+/***/ function(module, exports) {
+
+	var hasId = {
+	    setId: function(){
+	        this.id = this.constructor.name + '-' +
+	            (this.x | 0) + '-' +
+	            (this.y | 0) + '-' +
+	            Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+	
+	    }
+	};
+	
+	module.exports = hasId;
+
+/***/ },
+/* 6 */
 /*!********************************!*\
   !*** ./client/src/asteroid.js ***!
   \********************************/
@@ -427,7 +442,7 @@
 	module.exports = Asteroid;
 
 /***/ },
-/* 6 */
+/* 7 */
 /*!******************************!*\
   !*** ./client/src/bullet.js ***!
   \******************************/
