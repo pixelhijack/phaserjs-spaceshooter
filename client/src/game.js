@@ -34,7 +34,7 @@ function AsteroidAdventures(){
             NUMBER_OF_BULLETS: 10,
             SHOT_DELAY: 200, 
             animations: [
-                { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
+                { name: 'DEFAULT', frames: ['43'], fps: 10, loop: true }    
             ]
         });
         
@@ -43,12 +43,17 @@ function AsteroidAdventures(){
             var bullet = new Bullet(this.game, 0, 0, 'ships', {
                 animations: [
                     { 
-                        name: 'IDLE', 
+                        name: 'DEFAULT', 
                         frames: ['44'], 
                         fps: 10, 
                         loop: true
                     }, { 
                         name: 'EXPLODE', 
+                        frames: ['60', '63', '64'], 
+                        fps: 10, 
+                        loop: true
+                    }, { 
+                        name: 'DIE', 
                         frames: ['60', '63', '64'], 
                         fps: 10, 
                         loop: false
@@ -64,11 +69,11 @@ function AsteroidAdventures(){
         
         var asteroidSprites = ['01','02','03','04','05','06','07','08'];
         
-        for(var j=0;j<20;j++){
+        for(var j=0;j<50;j++){
             var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids', {
                 animations: [
                     { 
-                        name: 'IDLE', 
+                        name: 'DEFAULT', 
                         frames: [Math.floor(Math.random() * asteroidSprites.length)], 
                         fps: 10, 
                         loop: true
@@ -88,7 +93,7 @@ function AsteroidAdventures(){
         keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     };
     this.update = function(){
-        console.log('[PHASER] update');
+        //console.log('[PHASER] update');
         
         // fps debugging 
         this.game.debug.text(this.game.time.fps, 5, 20);
@@ -101,7 +106,7 @@ function AsteroidAdventures(){
             this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
         }.bind(this));
         
-        this.game.physics.arcade.collide(ship.bullets, asteroids, function(bullet, asteroid){
+        this.game.physics.arcade.overlap(ship.bullets, asteroids, function(bullet, asteroid){
             this.eventsOf.collision.dispatch({ type: actionTypes.HIT, target: asteroid.id });
         }.bind(this));
         

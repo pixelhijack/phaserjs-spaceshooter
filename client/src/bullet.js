@@ -15,9 +15,9 @@ Bullet.prototype.constructor = Bullet;
 
 Bullet.prototype.explode = function(event){
     if(event.type === 'HIT'){
-        this.setState({ type: 'EXPLODE', priority: 3, time: this.game.time.now + 100 });
-        this.game.time.events.add(Phaser.Timer.SECOND * 0.1, function(){
-            this.setState({ type: 'DIE', priority: 10, time: this.game.time.now + 300 });
+        this.setState('EXPLODE', this.game.time.now + 200);
+        this.game.time.events.add(Phaser.Timer.SECOND * 0.5, function(){
+            this.setState('DIE', this.game.time.now + 300);
         }, this);
     }
 };

@@ -13,7 +13,10 @@ Asteroid.prototype.constructor = Asteroid;
 
 Asteroid.prototype.onHit = function(event){
     if(event.type === 'HIT' && event.target === this.id){
-        this.kill();
+        this.setState('EXPLODE', this.game.time.now + 100);
+        this.game.time.events.add(Phaser.Timer.SECOND * 0.1, function(){
+            this.setState('DIE', this.game.time.now + 300);
+        }, this);
     }
 };
 

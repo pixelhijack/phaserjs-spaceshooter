@@ -103,7 +103,7 @@
 	            NUMBER_OF_BULLETS: 10,
 	            SHOT_DELAY: 200, 
 	            animations: [
-	                { name: 'IDLE', frames: ['43'], fps: 10, loop: true }    
+	                { name: 'DEFAULT', frames: ['43'], fps: 10, loop: true }    
 	            ]
 	        });
 	        
@@ -112,12 +112,17 @@
 	            var bullet = new Bullet(this.game, 0, 0, 'ships', {
 	                animations: [
 	                    { 
-	                        name: 'IDLE', 
+	                        name: 'DEFAULT', 
 	                        frames: ['44'], 
 	                        fps: 10, 
 	                        loop: true
 	                    }, { 
 	                        name: 'EXPLODE', 
+	                        frames: ['60', '63', '64'], 
+	                        fps: 10, 
+	                        loop: true
+	                    }, { 
+	                        name: 'DIE', 
 	                        frames: ['60', '63', '64'], 
 	                        fps: 10, 
 	                        loop: false
@@ -133,11 +138,11 @@
 	        
 	        var asteroidSprites = ['01','02','03','04','05','06','07','08'];
 	        
-	        for(var j=0;j<20;j++){
+	        for(var j=0;j<50;j++){
 	            var asteroid =  new Asteroid(this.game, Math.random() * this.world.width, Math.random() * this.world.height, 'asteroids', {
 	                animations: [
 	                    { 
-	                        name: 'IDLE', 
+	                        name: 'DEFAULT', 
 	                        frames: [Math.floor(Math.random() * asteroidSprites.length)], 
 	                        fps: 10, 
 	                        loop: true
@@ -157,7 +162,7 @@
 	        keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 	    };
 	    this.update = function(){
-	        console.log('[PHASER] update');
+	        //console.log('[PHASER] update');
 	        
 	        // fps debugging 
 	        this.game.debug.text(this.game.time.fps, 5, 20);
@@ -170,7 +175,7 @@
 	            this.eventsOf.collision.dispatch({ type: actionTypes.COLLISION });
 	        }.bind(this));
 	        
-	        this.game.physics.arcade.collide(ship.bullets, asteroids, function(bullet, asteroid){
+	        this.game.physics.arcade.overlap(ship.bullets, asteroids, function(bullet, asteroid){
 	            this.eventsOf.collision.dispatch({ type: actionTypes.HIT, target: asteroid.id });
 	        }.bind(this));
 	        
@@ -235,18 +240,13 @@
 	            return;
 	        }
 	        
-	        this.setState({ 
-	            type: 'SHOOT', 
-	            priority: 1, 
-	            time: this.game.time.now + this.props.SHOT_DELAY 
-	        });
+	        this.setState('SHOOT', this.game.time.now + this.props.SHOT_DELAY);
 	        
 	        var bullet = this.bullets.getFirstDead();
 	        if(!bullet){ 
 	            return; 
 	        }
 	        bullet.revive();
-	        bullet.state = [];
 	        bullet.reset(this.x, this.y);
 	
 	        // Shoot it
@@ -318,12 +318,12 @@
 	    this.game = game;
 	    this.props = props || { animations: [] };
 	    
-	    // state object: { type: 'STUN', time: 12077484, priority: 1 }
-	    this.state = [];
-	    this.DEFAULT_STATE = {
-	        type: 'IDLE',
-	        time: 0,
-	        priority: 0
+	    // states order represent interruption priority
+	    this.state = {
+	        'DIE': 0,
+	        'STUN': 0,
+	        'SHOOT': 0,
+	        'DEFAULT': Infinity
 	    };
 	    
 	    Phaser.Sprite.call(this, game, x, y, sprite);
@@ -354,37 +354,29 @@
 	    console.log('[%s]: ', this.constructor.name, event);
 	};
 	
-	GameObject.prototype.setState = function(state){
-	    this.state.push(state);
-	};
-	
-	GameObject.prototype.clearState = function(state){
-	    this.state = this.state.filter(function(state){
-	        return state.time > this.game.time.now;
-	    }.bind(this));
+	GameObject.prototype.setState = function(type, time){
+	    if(this.state[type] !== undefined){
+	        this.state[type] = time;
+	    }
 	};
 	
 	GameObject.prototype.getState = function(){
-	    // 1. default if no other
-	    // 2. highest priority, pop
-	    // 3. longest time-span
-	    if(!this.state.length){
-	        return this.DEFAULT_STATE;
+	    for(var type in this.state){
+	        if(this.game.time.now < this.state[type]){
+	            return type;
+	        }
 	    }
-	    return this.state[0];
+	    return 'DEFAULT';
 	};
 	
-	GameObject.prototype.hasState = function(stateToTest){
-	    return this.state.some(function(state){
-	        return state.type === stateToTest && state.time > this.game.time.now;
-	    }.bind(this));
+	GameObject.prototype.hasState = function(type){
+	    return this.state[type] !== undefined ? this.state[type] >= this.game.time.now : undefined;  
 	};
 	
 	GameObject.prototype.update = function(){
-	    if(!this.state){ return; }
+	    if(this.hasState('DIE')){ this.kill(); }
 	    var state = this.getState();
-	    this.animations.play(state.type);
-	    this.clearState();
+	    this.animations.play(state);
 	};
 	
 	GameObject.prototype.debug = function(toDebug){
@@ -435,7 +427,10 @@
 	
 	Asteroid.prototype.onHit = function(event){
 	    if(event.type === 'HIT' && event.target === this.id){
-	        this.kill();
+	        this.setState('EXPLODE', this.game.time.now + 100);
+	        this.game.time.events.add(Phaser.Timer.SECOND * 0.1, function(){
+	            this.setState('DIE', this.game.time.now + 300);
+	        }, this);
 	    }
 	};
 	
@@ -465,9 +460,9 @@
 	
 	Bullet.prototype.explode = function(event){
 	    if(event.type === 'HIT'){
-	        this.setState({ type: 'EXPLODE', priority: 3, time: this.game.time.now + 100 });
-	        this.game.time.events.add(Phaser.Timer.SECOND * 0.1, function(){
-	            this.setState({ type: 'DIE', priority: 10, time: this.game.time.now + 300 });
+	        this.setState('EXPLODE', this.game.time.now + 200);
+	        this.game.time.events.add(Phaser.Timer.SECOND * 0.5, function(){
+	            this.setState('DIE', this.game.time.now + 300);
 	        }, this);
 	    }
 	};

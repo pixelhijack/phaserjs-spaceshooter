@@ -5,12 +5,12 @@ function GameObject(game, x, y, sprite, props){
     this.game = game;
     this.props = props || { animations: [] };
     
-    // state object: { type: 'STUN', time: 12077484, priority: 1 }
-    this.state = [];
-    this.DEFAULT_STATE = {
-        type: 'IDLE',
-        time: 0,
-        priority: 0
+    // states order represent interruption priority
+    this.state = {
+        'DIE': 0,
+        'STUN': 0,
+        'SHOOT': 0,
+        'DEFAULT': Infinity
     };
     
     Phaser.Sprite.call(this, game, x, y, sprite);
@@ -41,37 +41,29 @@ GameObject.prototype.onEvents = function(event){
     console.log('[%s]: ', this.constructor.name, event);
 };
 
-GameObject.prototype.setState = function(state){
-    this.state.push(state);
-};
-
-GameObject.prototype.clearState = function(state){
-    this.state = this.state.filter(function(state){
-        return state.time > this.game.time.now;
-    }.bind(this));
+GameObject.prototype.setState = function(type, time){
+    if(this.state[type] !== undefined){
+        this.state[type] = time;
+    }
 };
 
 GameObject.prototype.getState = function(){
-    // 1. default if no other
-    // 2. highest priority, pop
-    // 3. longest time-span
-    if(!this.state.length){
-        return this.DEFAULT_STATE;
+    for(var type in this.state){
+        if(this.game.time.now < this.state[type]){
+            return type;
+        }
     }
-    return this.state[0];
+    return 'DEFAULT';
 };
 
-GameObject.prototype.hasState = function(stateToTest){
-    return this.state.some(function(state){
-        return state.type === stateToTest && state.time > this.game.time.now;
-    }.bind(this));
+GameObject.prototype.hasState = function(type){
+    return this.state[type] !== undefined ? this.state[type] >= this.game.time.now : undefined;  
 };
 
 GameObject.prototype.update = function(){
-    if(!this.state){ return; }
+    if(this.hasState('DIE')){ this.kill(); }
     var state = this.getState();
-    this.animations.play(state.type);
-    this.clearState();
+    this.animations.play(state);
 };
 
 GameObject.prototype.debug = function(toDebug){

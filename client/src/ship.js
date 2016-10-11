@@ -14,18 +14,13 @@ function Ship(game, x, y, sprite, props){
             return;
         }
         
-        this.setState({ 
-            type: 'SHOOT', 
-            priority: 1, 
-            time: this.game.time.now + this.props.SHOT_DELAY 
-        });
+        this.setState('SHOOT', this.game.time.now + this.props.SHOT_DELAY);
         
         var bullet = this.bullets.getFirstDead();
         if(!bullet){ 
             return; 
         }
         bullet.revive();
-        bullet.state = [];
         bullet.reset(this.x, this.y);
 
         // Shoot it
