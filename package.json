@@ -2,7 +2,7 @@
   "name": "asteroid-adventures",
   "version": "1.0.0",
   "description": "yet another space shooter",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "express": "^4.14.0",
     "webpack": "^1.13.2"
